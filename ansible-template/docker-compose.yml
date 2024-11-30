@@ -1,0 +1,13 @@
+services:
+  local-vps-23:
+    image: atlekbai/local-vps:latest
+    container_name: local-vps-23
+    ports:
+      - "23:22"
+      - "80:80"
+      - "7070:7070"
+      - "8080:8080"
+      - "8888:8888"
+      - "9090:9090"
+    restart: always
+    command: "22"

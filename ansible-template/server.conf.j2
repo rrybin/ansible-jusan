@@ -1,0 +1,10 @@
+server {
+    listen {{ server_port }};
+    server_name {{ server_name }};
+{% for locat in locations %}
+
+    location {{ locat.path }} {
+        return {{ locat.status_code }} "{{ locat.message}}";
+    }
+{% endfor %}
+}

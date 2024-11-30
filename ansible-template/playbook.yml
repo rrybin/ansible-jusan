@@ -1,0 +1,68 @@
+---
+- hosts: lb
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Install NGINX
+      apt:
+        update_cache: yes
+        name: nginx
+        state: latest
+
+    - name: Copy nginx.conf to /etc/nginx/
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/
+        force: true
+      notify: reload_nginx
+
+    - name: Remove default.conf
+      file:
+        path: /etc/nginx/conf.d/defaul.conf
+        state: absent
+
+    - name: Configure NGIN from template
+      template:
+        src: server.conf.j2
+        dest: /etc/nginx/conf.d/{{ item.server_name }}.conf
+      vars:
+        server_port: "{{ item.server_port }}"
+        server_name: "{{ item.server_name }}"
+        locations: "{{ item.locations }}"
+      loop:
+        - server_port: 7070
+          server_name: jmart-ansible.kz
+          locations:
+            - path: /main
+              status_code: 200
+              message: Добро пожаловать на JMart!
+            - path: /profile
+              status_code: 201
+              message: Это страница профиля.
+        - server_port: 8080
+          server_name: jusan-ansible.kz
+          locations:
+            - path: /
+              status_code: 200
+              message: Добро пожаловать на Jusan Bank!
+            - path: /account
+              status_code: 202
+              message: Здесь ваш банковский счет!  
+        - server_port: 9090
+          server_name: invest-ansible.kz
+          locations:
+            - path: /home
+              status_code: 200
+              message: Добро пожаловать на Jusan Invest!
+            - path: /user
+              status_code: 203
+              message: Это страница с вашим брокерским счетом.
+            - path: /demo
+              status_code: 201
+              message: Это демо страница.
+      notify: reload_nginx
+  
+  handlers:
+    - name: reload_nginx
+      service: name=nginx state=reloaded
